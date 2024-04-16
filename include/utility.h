@@ -249,12 +249,15 @@ public:
         usleep(100);
     }
 
+    // 参考：https://blog.csdn.net/qq_42731705/article/details/128344179#t4
+    // 将 IMU 原始数据从 IMU 帧转换为 Lidar 帧，遵循 ROS REP-105 约定（x - 向前，y - 左，z - 向上）
+    // 
     sensor_msgs::Imu imuConverter(const sensor_msgs::Imu& imu_in)
     {
         sensor_msgs::Imu imu_out = imu_in;
         // rotate acceleration
         Eigen::Vector3d acc(imu_in.linear_acceleration.x, imu_in.linear_acceleration.y, imu_in.linear_acceleration.z);
-        acc = extRot * acc;
+        acc = extRot * acc; // extRot就是配置文件中的extrinsicRot
         imu_out.linear_acceleration.x = acc.x();
         imu_out.linear_acceleration.y = acc.y();
         imu_out.linear_acceleration.z = acc.z();
@@ -266,7 +269,7 @@ public:
         imu_out.angular_velocity.z = gyr.z();
         // rotate roll pitch yaw
         Eigen::Quaterniond q_from(imu_in.orientation.w, imu_in.orientation.x, imu_in.orientation.y, imu_in.orientation.z);
-        Eigen::Quaterniond q_final = q_from * extQRPY;
+        Eigen::Quaterniond q_final = q_from * extQRPY; // extQRPY就是配置文件中的extrinsicRPY
         imu_out.orientation.x = q_final.x();
         imu_out.orientation.y = q_final.y();
         imu_out.orientation.z = q_final.z();
